@@ -1,0 +1,194 @@
+Professional Summary
+
+Manoj Santra is a Full-Stack Software Engineer with nearly four years of professional experience building scalable web and mobile applications. You currently work as a Senior Software Developer at MSQUBE Technology Solutions Pvt. Ltd., where you focus on designing and developing enterprise-grade software solutions using modern JavaScript and Python technologies.
+
+Your primary expertise lies in backend engineering, full-stack development, and increasingly in Generative AI and Agentic AI. Over the past few years, you've built applications that serve thousands of users and have gained practical experience in solving real-world software engineering challenges involving scalability, reliability, performance optimization, offline synchronization, and distributed systems.
+
+Current Profession
+
+You are a Senior Software Developer working primarily on:
+
+Backend development
+Full-stack web applications
+Mobile application development
+Enterprise software
+AI-powered solutions
+System architecture
+API design
+Database engineering
+
+Your work involves taking projects from requirements gathering through deployment while ensuring maintainability, scalability, and performance.
+
+Technical Skills
+Programming Languages
+JavaScript
+TypeScript
+Python
+Dart
+PHP
+Frontend
+React.js
+Next.js
+React Native
+Flutter
+HTML5
+CSS3
+Tailwind CSS
+Material UI
+Backend
+Node.js
+Express.js
+FastAPI
+Databases
+PostgreSQL
+MongoDB
+SQLite
+ORMs
+Sequelize
+Prisma
+Mongoose
+AI & Machine Learning
+
+You are actively transitioning into AI engineering and have been learning:
+
+LangChain
+LangGraph
+Hugging Face
+Ollama
+Retrieval-Augmented Generation (RAG)
+Embeddings
+Vector Databases (ChromaDB)
+Multi-agent systems
+LLM application development
+
+Your goal is to become an Agentic AI Developer and eventually specialize in intelligent software systems.
+
+DevOps & Infrastructure
+Docker
+Kubernetes
+Nginx
+Redis
+Kafka
+RabbitMQ
+Linux
+Git
+REST APIs
+Professional Experience
+
+Throughout your career, you've contributed to several production-grade applications.
+
+Computer-Based Examination Platform (QCBT)
+
+One of your most significant projects is a highly scalable Computer-Based Test (CBT) platform capable of conducting examinations for over 50,000 candidates.
+
+Key features include:
+
+Online and offline examination modes
+LAN/Intranet deployment
+Secure examination environment
+Face verification
+AI-assisted monitoring
+Administrative dashboards
+Student portal
+Credit-based subscription model
+Large-scale candidate management
+
+This project gave you substantial experience in distributed systems, synchronization, scalability, and enterprise software architecture.
+
+Government Projects
+
+You have also worked on government-focused software solutions, including:
+
+Grievance Management System
+Employment and job platforms
+Dashboard applications
+Enterprise workflow systems
+
+These projects required reliability, security, and handling real-world operational requirements.
+
+Mobile Development
+
+You have developed cross-platform mobile applications using:
+
+React Native
+Flutter
+
+These include:
+
+Enterprise workforce applications
+Job-related platforms
+Real-time tracking features
+Offline synchronization
+Geolocation-based functionality
+Engineering Interests
+
+Your strongest interests include:
+
+Backend architecture
+Distributed systems
+System Design
+Performance optimization
+Scalable APIs
+Database optimization
+Event-driven architecture
+Cloud-native applications
+AI engineering
+Automation
+Intelligent agents
+
+You particularly enjoy solving problems related to:
+
+Large-scale software systems
+Reliability
+Offline synchronization
+Enterprise architectures
+High-performance backend services
+Current Learning Journey
+
+At this stage of your career, you're investing significant time in mastering modern AI technologies.
+
+You have been studying:
+
+LangChain
+LangGraph
+Hugging Face
+RAG systems
+Embeddings
+ChromaDB
+Vector search
+Prompt engineering
+Multi-agent communication
+AI workflows
+
+Rather than simply using AI APIs, your objective is to understand the underlying architecture and build complete production-ready AI applications.
+
+Career Goals
+
+Your long-term ambitions include:
+
+Becoming an expert Backend Engineer
+Mastering System Design
+Becoming an Agentic AI Engineer
+Building production-grade AI applications
+Working on large-scale distributed systems
+Designing intelligent automation platforms
+
+You have expressed a desire to move beyond routine CRUD applications toward systems that solve meaningful real-world problems and leverage AI to reduce manual work and improve productivity.
+
+Professional Strengths
+
+Your strengths include:
+
+Strong problem-solving skills
+Full-stack development experience
+Backend architecture
+Enterprise application development
+Mobile application development
+Database design
+API development
+Distributed systems understanding
+Continuous learning mindset
+Interest in modern AI technologies
+Professional Mission
+
+Your vision is to evolve from a full-stack software engineer into a highly skilled AI and systems engineer who builds scalable, intelligent software. You aim to combine strong backend engineering, modern AI frameworks, and sound system design principles to create production-ready applications that have a meaningful impact on businesses and users.
