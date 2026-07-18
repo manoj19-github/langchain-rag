@@ -1,5 +1,6 @@
 import os 
 import redis
+import json
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains import create_history_aware_retriever
 from langchain_classic.chains import create_retrieval_chain
@@ -10,6 +11,7 @@ from dotenv import load_dotenv
 from typing import Annotated,List
 from typing_extensions import TypedDict
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint,HuggingFaceEmbeddings
+
 import re
 import unicodedata
 # from langchain_tavily  import TavilySearch
@@ -33,6 +35,8 @@ import numpy as np
 from typing import List
 from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
+import uuid
+
 
 from langchain_core.runnables import RunnablePassthrough
 load_dotenv()
@@ -50,6 +54,8 @@ llm = ChatOllama(
     model="qwen2.5:7b",
     temperature=0
 )
+
+
 
 # llm_endpoint = HuggingFaceEndpoint(
 #     repo_id="Qwen/Qwen2.5-7B-Instruct",
@@ -148,9 +154,48 @@ redis_client = redis.Redis(
 
 if redis_client.ping():
     print("Redis is running")
+    
 else:
     print("Redis is not running")
 
+
+
+def clear_history(session_id):
+    redis_client.delete(f"chat:{session_id}")
+
+def save_message(session_id, role, content):
+    if not redis_client.ping():
+        print("Redis is not running")
+        return
+    redis_client.rpush(
+        f"chat:{session_id}",
+        json.dumps(
+            {
+                "role": role,
+                "content": content,
+            }
+        ),
+    )
+    
+    
+def load_chat_history(session_id):
+    history = []
+
+    messages = redis_client.lrange(f"chat:{session_id}", 0, -1)
+
+    for msg in messages:
+        msg = json.loads(msg)
+
+        if msg["role"] == "human":
+            history.append(
+                HumanMessage(content=msg["content"])
+            )
+        else:
+            history.append(
+                AIMessage(content=msg["content"])
+            )
+
+    return history
 
 
 # rag_chain = create_retrieval_chain(
@@ -212,22 +257,38 @@ conversation_rag_chain  = create_retrieval_chain(
 )   
 
 
+session_id = str(uuid.uuid4())
 
 while True:
+
+    chat_history = load_chat_history(session_id)
+    print("Chat History : ...............",end="\n")
+    print(chat_history)
+    print("----------------------------------------- ",end="\n\n")
+
     user_input = input("Qust: Enter your question: ")
     if user_input.lower() == "exit":
         print("Chat History : ...............",end="\n")
-        print(chat_history)
+        print(chat_history) 
+        clear_history(session_id)
+
         break
     result = conversation_rag_chain.invoke({
         "chat_history": chat_history,
         "input": user_input})
     print("----------------------------------------- ",end="\n\n")
     print(f"Answer: {result['answer']}")
-    chat_history.extend([
-        HumanMessage(content=user_input),
-        AIMessage(content=result['answer']),
-    ])
+    save_message(
+        session_id,
+        "human",
+        user_input,
+    )
+
+    save_message(
+        session_id,
+        "ai",
+        result["answer"],
+    )
     print("----------------------------------------- ",end="\n\n")
 
 
