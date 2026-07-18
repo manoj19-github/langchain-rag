@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from typing import Annotated,List
 from typing_extensions import TypedDict
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint,HuggingFaceEmbeddings
+from langchain_groq import ChatGroq
 
 import re
 import unicodedata
@@ -37,9 +38,13 @@ from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 import uuid
 
+import requests
+
 
 from langchain_core.runnables import RunnablePassthrough
 load_dotenv()
+
+os.environ["LANGCHAIN_TRACING_V2"] = "false"
 
 chat_history = []
 # llm = HuggingFaceEndpoint(
@@ -50,12 +55,15 @@ chat_history = []
 
 
 
-llm = ChatOllama(
-    model="qwen2.5:7b",
-    temperature=0
+# llm = ChatOllama(
+#     model="qwen2.5:7b",
+#     temperature=0
+# )
+
+llm = ChatGroq(
+    model="llama-3.1-8b-instant",
+    api_key=os.getenv("GROQ_TOKEN"),
 )
-
-
 
 # llm_endpoint = HuggingFaceEndpoint(
 #     repo_id="Qwen/Qwen2.5-7B-Instruct",
@@ -64,11 +72,13 @@ llm = ChatOllama(
 
 # llm = ChatHuggingFace(llm=llm_endpoint)
 
+# embeddings = HuggingFaceEmbeddings(
+#     model_name="BAAI/bge-small-en-v1.5"
+# )
+
 embeddings = HuggingFaceEmbeddings(
     model_name="BAAI/bge-small-en-v1.5"
 )
-
-
 dir_loader = DirectoryLoader("data/test_files",glob="**/*.txt",loader_cls=TextLoader,loader_kwargs={"encoding":"utf-8"})
 
 documents = dir_loader.load()
