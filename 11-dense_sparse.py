@@ -15,13 +15,20 @@ from langchain_ollama import ChatOllama
 
 import re
 import os
-docs = [
-    Document(page_content="Langchain helps to build LLM applications", metadata={"source": "my-source"}),
-    Document(page_content="Pinecode in a vector database for semantic search", metadata={"source": "my-source"}),
-    Document(page_content="The Eiffel Tower is a famous landmark in Paris, France", metadata={"source": "my-source"}),
-    Document(page_content="Paris is the capital and most populous city of France", metadata={"source": "my-source"}),
-    Document(page_content="France is a country in Western Europe", metadata={"source": "my-source"}),
-]
+from langchain_community.document_loaders import TextLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+# Load a large text file (State of the Union address)
+loader = TextLoader("data/text_files/state_of_the_union.txt", encoding="utf-8")
+raw_docs = loader.load()
+
+# Split the large document into smaller chunks
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=50
+)
+docs = text_splitter.split_documents(raw_docs)
+print(f"Loaded and split into {len(docs)} documents.")
 
 embedding_model = HuggingFaceEmbeddings(
     model_name="all-MiniLM-L6-v2",
