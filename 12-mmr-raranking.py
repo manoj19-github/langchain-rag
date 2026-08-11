@@ -3,6 +3,7 @@ from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from langchain_community.retrievers import BM25Retriever
+from langchain_classic.retrievers import EnsembleRetriever
 from sentence_transformers import CrossEncoder
 
 from langchain_core.output_parsers import StrOutputParser
@@ -11,11 +12,12 @@ from langchain_core.runnables import RunnableLambda
 from langchain_ollama import ChatOllama
 from operator import itemgetter
 # 1. Create documents
-from langchain_community.document_loaders import TextLoader
+
+from langchain_community.document_loaders import TextLoader,PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
-loader = TextLoader("data/text_files/state_of_the_union.txt", encoding="utf-8")
+loader = PyMuPDFLoader("data/pdf/Plutus-IAS_Ancient-Indian-History-Dr.-Jitendra-Kumar-1.pdf")
 raw_docs = loader.load()
 
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
@@ -49,21 +51,26 @@ mmr_retriever = vectorstore.as_retriever(
 bm25_retriever = BM25Retriever.from_documents(documents)
 bm25_retriever.k = 10
 
+
+# def hybrid_mmr_retrieve(query):
+#     dense_docs = mmr_retriever.invoke(query)
+#     sparse_docs = bm25_retriever.invoke(query)
+
+#     combined = []
+#     seen = set()
+
+#     for doc in dense_docs + sparse_docs:
+#         key = doc.page_content.strip()
+#         if key not in seen:
+#             combined.append(doc)
+#             seen.add(key)
+
+#     return combined
 # 6. Hybrid Retrieval with Deduplication
-def hybrid_mmr_retrieve(query):
-    dense_docs = mmr_retriever.invoke(query)
-    sparse_docs = bm25_retriever.invoke(query)
-
-    combined = []
-    seen = set()
-
-    for doc in dense_docs + sparse_docs:
-        key = doc.page_content.strip()
-        if key not in seen:
-            combined.append(doc)
-            seen.add(key)
-
-    return combined
+hybrid_retriever = EnsembleRetriever(
+    retrievers=[mmr_retriever, bm25_retriever],
+    weights=[0.7, 0.3]
+)
 
 # 7. Initialize Cross-Encoder Reranker
 # Using ms-marco-MiniLM-L6-v2 as discussed in the context
@@ -90,14 +97,14 @@ def rerank(query, candidates, final_k=5):
 
 
 if __name__ == "__main__":
-    query = "What did the president say about Ketanji Brown Jackson?"
+    query = "Write a short note about Cholas."
     
     print("\n" + "=" * 80)
     print(f"QUERY: {query}")
     print("=" * 80 + "\n")
     
     # Step A: Hybrid MMR Retrieval
-    candidates = hybrid_mmr_retrieve(query)
+    candidates = hybrid_retriever.invoke(query)
     
     print(f"Retrieved {len(candidates)} deduplicated candidates from Chroma MMR and BM25.\n")
     print("CANDIDATES BEFORE RERANKING:")
@@ -136,7 +143,7 @@ if __name__ == "__main__":
     
     # Helper to map input to our existing retrieve and rerank flow
     def run_retrieval_flow(query_str):
-        candidates_list = hybrid_mmr_retrieve(query_str)
+        candidates_list = hybrid_retriever.invoke(query_str)
         scored_docs = rerank(query_str, candidates_list, final_k=3)
         # Extract just the Document objects from the (doc, score) tuples
         return [doc for doc, score in scored_docs]
