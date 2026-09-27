@@ -1,0 +1,10 @@
+{
+    "dependencies": [
+        "."
+    ],
+    "graphs": {
+        "openai_agent": "./18-debugging.py:agent_2",
+        "geography_rag": "./19-langgraph_rag.py:rag_graph"
+    },
+    "env": "./.env"
+}
