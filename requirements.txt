@@ -35,3 +35,4 @@ sentence-transformers
 tiktoken
 typing-extensions
 unstructured
+jq

@@ -7,7 +7,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from dotenv import load_dotenv
 from typing import Annotated,List
 from typing_extensions import TypedDict
-from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint,HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFacePipeline, HuggingFaceEmbeddings
 import re
 import unicodedata
 # from langchain_tavily  import TavilySearch
@@ -44,12 +44,19 @@ load_dotenv()
 
 
 
-llm_endpoint = HuggingFaceEndpoint(
-    repo_id="Qwen/Qwen2.5-7B-Instruct",
-    huggingfacehub_api_token=os.getenv("HF_TOKEN"),
+# 100% Free Hugging Face model running locally via pipeline (like your embedding model)
+llm = HuggingFacePipeline.from_model_id(
+    model_id="Qwen/Qwen2.5-0.5B-Instruct",
+    task="text-generation",
+    pipeline_kwargs={
+        "max_new_tokens": 256,
+        "temperature": 0.1,
+        "do_sample": True,
+        "return_full_text": False,
+    },
 )
 
-llm = ChatHuggingFace(llm=llm_endpoint)
+
 
 embeddings = HuggingFaceEmbeddings(
     model_name="BAAI/bge-small-en-v1.5"
@@ -62,6 +69,9 @@ documents = dir_loader.load()
 
 # Method 1 : Character Text Splitter
 # text = documents[0].page_content
+
+
+# --------------------------------------------------  Text parsing   -----------------------------------------------------------------------#
 
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=200,
@@ -90,6 +100,10 @@ print(" ---------------------------------------------------",end="\n\n")
 
 # Chromadb store
 
+
+# --------------------------------------------  Chroma  Vector Store       ---------------------------------------------------
+
+
 vector_store = Chroma.from_documents(
     documents=chunks,
     embedding=embeddings,
@@ -108,67 +122,83 @@ vector_store = Chroma.from_documents(
 # print("vector_store: ",vector_store._collection.count())
 
 
-retriever = vector_store.as_retriever(search_kwargs={"k":3})
+#  -------------------------------------------------   Basic Retriever     -----------------------------------------------------
 
-systemPrompt = """
-You are a assitant for question answering tasks. 
-If you don't know the answer, just say you don't 
-know use three sentences maximum and keep answer concise.
-
-Context: {context}
-"""
-question = input("Enter your question: ")
-
-
-prompt = ChatPromptTemplate.from_messages([
-    ("system", systemPrompt),
-    ("human", "{question}"),
-    
-])
-
+retriever = vector_store.as_retriever(search_kwargs={"k": 3}, search_type="similarity")
 
 def format_docs(docs):
+    """Format documents for insertion into prompt"""
     return "\n\n".join(doc.page_content for doc in docs)
 
 
+# ------------------------------------------ 1. History-Aware Retriever Sub-chain ------------------------------------------
+
+contextualize_q_system_prompt = """Given a chat history and the latest user question \
+which might reference context in the chat history, formulate a standalone question \
+which can be understood without the chat history. Do NOT answer the question, \
+just reformulate it if needed and otherwise return it as is."""
+
+contextualize_q_prompt = ChatPromptTemplate.from_messages([
+    ("system", contextualize_q_system_prompt),
+    MessagesPlaceholder(variable_name="chat_history"),
+    ("human", "{question}"),
+])
+
+# Sub-chain: reformulates query using history -> passes standalone query to retriever -> formats docs
+history_aware_retriever = (
+    contextualize_q_prompt
+    | llm
+    | StrOutputParser()
+    | retriever
+    | format_docs
+)
 
 
+# ------------------------------------------ 2. Conversational QA RAG Chain ------------------------------------------
 
+qa_system_prompt = """You are an assistant for question-answering tasks. 
+Use the following pieces of retrieved context to answer the question. 
+If you don't know the answer, just say you don't know. 
+Keep the answer concise (three sentences maximum).
 
-# rag_chain = create_retrieval_chain(
-#     retriever=retriever,
-#     combine_documents_chain=document_chain)
+Context:
+{context}"""
 
-
-
-results = vector_store.similarity_search_with_score(question, k=3)
-
-print("\nRetrieved Documents\n")
-
-# for i, (doc, score) in enumerate(results, start=1):
-#     print(f"\nResult {i}")
-#     print(f"Similarity Score: {score}")
-#     print(f"Metadata: {doc.metadata}")
-#     print(doc.page_content)
-
-
-
-
-
+qa_prompt = ChatPromptTemplate.from_messages([
+    ("system", qa_system_prompt),
+    MessagesPlaceholder(variable_name="chat_history"),
+    ("human", "{question}"),
+])
 
 rag_chain = (
-    {
-        "context": retriever | format_docs,
-        "question": RunnablePassthrough(),
-    }
-    | prompt
+    RunnablePassthrough.assign(context=history_aware_retriever)
+    | qa_prompt
     | llm
     | StrOutputParser()
 )
 
 
+# ------------------------------------------ 3. Interactive Multi-Turn Chat Loop ------------------------------------------
 
+chat_history = []
 
-print("---------------------------------------------------------------------------------------------",end="\n\n")
-result = rag_chain.invoke(question)
-print(result)
+print("=" * 60)
+print("Conversational RAG initialized! Type 'exit' or 'quit' to stop.")
+print("=" * 60)
+
+while True:
+    question = input("\nEnter your question: ").strip()
+    if not question or question.lower() in ["exit", "quit"]:
+        print("Exiting chat. Goodbye!")
+        break
+
+    result = rag_chain.invoke({
+        "question": question,
+        "chat_history": chat_history,
+    })
+
+    print(f"\nAnswer: {result}")
+
+    # Append current turn to chat history for subsequent queries
+    chat_history.append(HumanMessage(content=question))
+    chat_history.append(AIMessage(content=result))

@@ -57,3 +57,4 @@ def load_docx_with_unstructuredworddocumentloader(file_path):
         return None
 
 word_docs = load_docx_with_unstructuredworddocumentloader("data/word_files/proposal.docx")
+print("page content : ",word_docs)

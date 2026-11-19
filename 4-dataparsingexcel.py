@@ -15,7 +15,7 @@ from langchain_community.document_loaders import (
     TextLoader,DirectoryLoader,PyPDFLoader,PyMuPDFLoader,UnstructuredPDFLoader,
     OnlinePDFLoader,PDFMinerLoader,PDFPlumberLoader,
     UnstructuredWordDocumentLoader,Docx2txtLoader,
-    CSVLoader,
+    CSVLoader,UnstructuredCSVLoader
 )
 from langchain_text_splitters import (
     CharacterTextSplitter,
