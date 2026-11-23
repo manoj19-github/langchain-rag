@@ -9,6 +9,7 @@ langchain-chroma
 langchain-classic
 langchain-community
 langchain-core
+langchain-experimental
 langchain-groq
 langchain-huggingface
 langchain-ollama
